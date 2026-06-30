@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz: Basic Control & Fraud Awareness — DBO 2026</title>
+<style>
+  :root{
+    --orange:#f47621;
+    --orange-dark:#e0590f;
+    --green:#0a6b3d;
+    --bg:#0f1115;
+    --card:#171a21;
+    --card2:#1e222b;
+    --text:#eef0f3;
+    --muted:#9aa3b2;
+    --good:#2bb673;
+    --bad:#e0473a;
+    --border:#2a2f3a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Segoe UI',Tahoma,Arial,sans-serif;
+    background:radial-gradient(circle at top, #1a1d24, #0c0d10 70%);
+    color:var(--text); padding:24px 14px 60px;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+  header{
+    background:linear-gradient(120deg,var(--orange),var(--orange-dark));
+    border-radius:16px; padding:22px 24px; margin-bottom:22px;
+    box-shadow:0 10px 30px rgba(244,118,33,.25);
+  }
+  header h1{margin:0 0 6px;font-size:22px;}
+  header p{margin:0;opacity:.9;font-size:13.5px;}
+  .progress-bar{
+    height:8px;background:var(--card2);border-radius:6px;overflow:hidden;margin:18px 0 4px;
+    border:1px solid var(--border);
+  }
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--orange),#ffb35c);transition:width .3s;}
+  .progress-label{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:18px;}
+
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:20px; margin-bottom:16px;
+  }
+  .q-meta{font-size:12px;color:var(--orange);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;}
+  .q-text{font-size:16.5px;line-height:1.5;margin:0 0 16px;font-weight:600;}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .opt{
+    background:var(--card2); border:1px solid var(--border); border-radius:10px;
+    padding:13px 14px; cursor:pointer; font-size:14.5px; line-height:1.4;
+    display:flex; gap:10px; align-items:flex-start; transition:.15s;
+  }
+  .opt:hover{border-color:var(--orange);}
+  .opt .letter{
+    flex:0 0 24px;height:24px;border-radius:50%;background:#2a2f3a;
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);
+  }
+  .opt.selected{border-color:var(--orange);background:#2a2110;}
+  .opt.selected .letter{background:var(--orange);color:#1a1100;}
+  .opt.correct{border-color:var(--good);background:#0f2a1d;}
+  .opt.correct .letter{background:var(--good);color:#04150b;}
+  .opt.incorrect{border-color:var(--bad);background:#2a1411;}
+  .opt.incorrect .letter{background:var(--bad);color:#1a0604;}
+  .opt.disabled{cursor:default;}
+
+  .explain{
+    margin-top:12px;padding:12px 14px;border-radius:10px;font-size:13.5px;line-height:1.55;
+    background:#11151c;border:1px solid var(--border);color:var(--muted);
+  }
+  .explain b{color:var(--text);}
+
+  .nav-row{display:flex;gap:10px;margin-top:18px;}
+  button{
+    font-family:inherit;border:none;border-radius:10px;padding:12px 18px;font-size:14.5px;
+    font-weight:700;cursor:pointer;transition:.15s;
+  }
+  .btn-primary{background:var(--orange);color:#1a1100;flex:1;}
+  .btn-primary:hover{background:var(--orange-dark);color:#fff;}
+  .btn-primary:disabled{opacity:.35;cursor:not-allowed;}
+  .btn-ghost{background:var(--card2);color:var(--text);border:1px solid var(--border);}
+  .btn-ghost:hover{border-color:var(--orange);}
+
+  .hidden{display:none !important;}
+
+  #result{
+    text-align:center; padding:30px 20px;
+  }
+  #result h2{font-size:28px;margin:6px 0;}
+  .score-circle{
+    width:140px;height:140px;border-radius:50%;margin:0 auto 18px;
+    display:flex;align-items:center;justify-content:center;flex-direction:column;
+    background:conic-gradient(var(--orange) calc(var(--pct,0)*1%), #2a2f3a 0);
+    position:relative;
+  }
+  .score-circle::before{
+    content:'';position:absolute;inset:10px;background:var(--card);border-radius:50%;
+  }
+  .score-circle span{position:relative;font-size:28px;font-weight:800;}
+  .score-circle small{position:relative;font-size:12px;color:var(--muted);}
+  .summary-line{color:var(--muted);font-size:14px;margin-bottom:20px;}
+  .review-item{
+    text-align:left;background:var(--card2);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;margin-bottom:10px;font-size:13.5px;
+  }
+  .review-item.wrong{border-left:4px solid var(--bad);}
+  .review-item.ok{border-left:4px solid var(--good);}
+  .review-item .qn{color:var(--orange);font-weight:700;font-size:12px;margin-bottom:4px;}
+  .review-item .answer-line{margin-top:4px;color:var(--muted);}
+  .review-item .answer-line b{color:var(--text)}
+
+  .start-screen{text-align:center;padding:10px 4px 4px;}
+  .start-screen p{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:22px;}
+  .topics{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:24px;}
+  .tag{background:var(--card2);border:1px solid var(--border);padding:6px 12px;border-radius:20px;font-size:12px;color:var(--muted);}
+
+  footer{text-align:center;color:#555c6a;font-size:11.5px;margin-top:24px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🛡️ Basic Control & Fraud Awareness</h1>
+    <p>Quiz Simulasi — Refreshment Training DBO, Mei 2026 (Branch Control)</p>
+  </header>
+
+  <div id="start" class="card start-screen">
+    <p>Quiz ini berisi soal pilihan ganda berdasarkan materi <b>Basic Banking Operation Logic, Basic Control, Anti Fraud Awareness,</b> dan <b>How to Face Audit</b>. Jawaban & pembahasan akan muncul langsung setelah kamu submit tiap soal.</p>
+    <div class="topics">
+      <span class="tag">Dual Control / 4 Eyes</span>
+      <span class="tag">Password Security</span>
+      <span class="tag">Rekonsiliasi</span>
+      <span class="tag">10 Tindakan Terlarang</span>
+      <span class="tag">PEP & EDD</span>
+      <span class="tag">Fraud (POJK 39/2019)</span>
+      <span class="tag">WBS</span>
+      <span class="tag">SIPELAKU</span>
+    </div>
+    <button class="btn-primary" onclick="startQuiz()" style="width:100%">Mulai Quiz (30 Soal)</button>
+  </div>
+
+  <div id="quizArea" class="hidden">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-label"><span id="progressText">Soal 1 / 30</span><span id="scoreLive">Skor: 0</span></div>
+
+    <div class="card">
+      <div class="q-meta" id="qCategory">Kategori</div>
+      <p class="q-text" id="qText">Pertanyaan</p>
+      <div class="options" id="optionsBox"></div>
+      <div class="explain hidden" id="explainBox"></div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-ghost" onclick="prevQuestion()" id="prevBtn">← Sebelumnya</button>
+      <button class="btn-primary" onclick="handleMainBtn()" id="mainBtn" disabled>Submit Jawaban</button>
+    </div>
+  </div>
+
+  <div id="result" class="card hidden"></div>
+
+  <footer>Dibuat untuk latihan internal — Basic Control & Fraud Awareness Training, Branch Control 2025 / DBO Mei 2026</footer>
+</div>
+
+<script>
+const questions = [
+{cat:"Basic Banking Operation Logic", q:"Ke mana seharusnya petugas mencari jawaban resmi atas pertanyaan terkait ketentuan operasional?", opts:["Bertanya ke senior tanpa cek dokumen","KAO, SOP, Memo, User Manual","Bertanya ke nasabah","Mencari di internet umum"], correct:1, exp:"Sumber jawaban resmi adalah KAO, SOP, Memo, dan User Manual — bukan asumsi pribadi atau sumber tidak resmi."},
+{cat:"Basic Banking Operation Logic", q:"Apa yang dimaksud dengan '4 Eyes Principle'?", opts:["Mengawasi nasabah dengan CCTV", "Dual Control, Dual Custody, dan Segregation of Duty","Memeriksa dokumen dua kali oleh orang yang sama","Hanya berlaku untuk Branch Manager"], correct:1, exp:"4 Eyes Principle mencakup Dual Control, Dual Custody, dan Segregation of Duty — semua proses penting harus melibatkan minimal dua pihak."},
+{cat:"Basic Banking Operation Logic", q:"Sebelum melakukan override transaksi, petugas wajib...", opts:["Langsung approve agar nasabah tidak menunggu","Selalu periksa transaksi yang akan dioverride","Meminta nasabah menandatangani form kosong","Mengabaikan validasi sistem"], correct:1, exp:"Salah satu Basic Operation Logic adalah selalu memeriksa transaksi yang akan dioverride sebelum disetujui."},
+{cat:"Basic Banking Operation Logic", q:"Prinsip 'Ingat Service, bukan Over Service' berarti...", opts:["Pelayanan boleh melanggar prosedur demi kepuasan nasabah","Pelayanan harus tetap sesuai ketentuan & tidak melanggar kontrol demi kenyamanan nasabah","Mengutamakan kecepatan di atas keamanan","Menolak semua permintaan nasabah"], correct:1, exp:"Service yang baik tetap harus dalam koridor SOP dan kontrol; jangan sampai 'over service' membuka celah pelanggaran (misal: titip data login, dsb)."},
+{cat:"Basic Banking Operation Logic", q:"Verification & Confirmation kepada nasabah dalam basic control biasanya dilakukan melalui...", opts:["Pesan WhatsApp tidak resmi","Call back confirmation","Menunggu nasabah datang lagi ke cabang","Menanyakan ke rekan kerja nasabah"], correct:1, exp:"Verification & Confirmation dilakukan melalui Call Back confirmation langsung ke nasabah."},
+{cat:"Update Ketentuan", q:"Berdasarkan M.004.CCPR.2026, threshold transaksi valuta asing terhadap Rupiah yang mewajibkan dokumen underlying berubah dari USD 100.000 menjadi...", opts:["USD 25.000","USD 50.000","USD 75.000","USD 150.000"], correct:1, exp:"Threshold transaksi valas terhadap Rupiah yang mewajibkan dokumen underlying turun dari USD 100.000 menjadi USD 50.000."},
+{cat:"Update Ketentuan", q:"Untuk pembukaan rekening KSO Gereja Katolik, dokumen apa yang Mandatory jika gereja tidak diangkat oleh keuskupan?", opts:["Surat Keputusan Kementerian Agama","Fotokopi Surat Rekomendasi dari Konferensi Waligereja Indonesia (KWI)","Surat Keterangan Domisili","Akta Notaris Gereja"], correct:1, exp:"Untuk Gereja Katolik, Fotokopi Surat Rekomendasi dari KWI bersifat Mandatory jika gereja tersebut tidak diangkat oleh keuskupan."},
+{cat:"Update Ketentuan", q:"Sesuai SOP Liabilities - Tabungan Referensi B-201-001 versi terbaru, bagaimana ketentuan Teller terkait stock buku tabungan?", opts:["Teller wajib menyimpan stock buku tabungan dalam jumlah banyak","Teller tidak melakukan penyimpanan stock buku tabungan, permintaan hanya sesuai kebutuhan saat nasabah datang","Stock buku tabungan disimpan di laci pribadi Teller","Buku tabungan dapat diberikan tanpa form permohonan"], correct:1, exp:"Teller tidak melakukan penyimpanan stock Buku Tabungan; permintaan dilakukan hanya sesuai kebutuhan saat nasabah datang dan lembar permohonan wajib diserahkan ke Penanggung Jawab Buku Tabungan."},
+{cat:"10 Tindakan Terlarang", q:"Berikut ini termasuk dalam 10 Tindakan Terlarang, KECUALI...", opts:["Menjual produk yang bukan resmi dipasarkan Bank Danamon","Menerima komisi/fee dari nasabah","Melaporkan dugaan penyimpangan melalui Whistleblowing System","Menerima titipan setoran tunai dari nasabah"], correct:2, exp:"Melaporkan dugaan penyimpangan melalui WBS justru termasuk dalam 10 Tindakan yang Harus Dilakukan, bukan tindakan terlarang."},
+{cat:"10 Tindakan Terlarang", q:"Karyawan menerima slip transaksi yang sudah ditandatangani nasabah namun kolom lainnya belum lengkap diisi. Tindakan ini termasuk...", opts:["Diperbolehkan jika nasabah VIP","Tindakan terlarang (pre-signed blank form)","Standar prosedur normal","Hanya dilarang untuk Form Permohonan Kredit"], correct:1, exp:"Menerima/menyimpan form yang sudah ditandatangani namun belum terisi lengkap (pre-signed blank form) adalah salah satu dari 10 Tindakan Terlarang."},
+{cat:"10 Tindakan Terlarang", q:"Apakah karyawan diperbolehkan mengakses internet/mobile banking (D-Bank Pro) milik nasabah meskipun atas permintaan nasabah?", opts:["Boleh jika ada izin tertulis","Tidak boleh sama sekali, termasuk tindakan terlarang","Boleh hanya untuk nasabah prioritas","Boleh jika disaksikan supervisor"], correct:1, exp:"Mengakses internet/mobile banking, meminta password/M-PIN/OTP/PIN ATM dilarang walaupun atas permintaan/persetujuan nasabah."},
+{cat:"10 Tindakan Terlarang", q:"Menampung dana nasabah di rekening pribadi, keluarga, atau orang lain termasuk dalam...", opts:["Layanan tambahan yang sah","Salah satu dari 10 Tindakan Terlarang","Kebijakan opsional cabang","Diperbolehkan untuk nasabah lama"], correct:1, exp:"Menampung dana nasabah di rekening pribadi/keluarga/orang lain adalah pelanggaran serius dan termasuk 10 Tindakan Terlarang."},
+{cat:"10 Tindakan yang Harus Dilakukan", q:"Manakah yang termasuk dalam 10 Tindakan yang Harus Dilakukan?", opts:["Melaksanakan Weekly Operating Rhythm (WOR) secara disiplin","Menerima titipan setoran tunai","Memberikan tambahan bunga under table","Menyimpan dokumen nasabah secara singly"], correct:0, exp:"Melaksanakan WOR sesuai ketentuan secara disiplin adalah salah satu dari 10 Tindakan yang Harus Dilakukan."},
+{cat:"10 Tindakan yang Harus Dilakukan", q:"Di mana seharusnya formulir/dokumen yang sudah terisi lengkap oleh nasabah disimpan?", opts:["Laci meja karyawan","Tas pribadi karyawan","Khasanah","Kendaraan karyawan"], correct:2, exp:"Formulir/dokumen yang sudah terisi lengkap wajib disimpan di khasanah, bukan disimpan secara pribadi (singly)."},
+{cat:"Basic Control", q:"Berikut ini adalah elemen Basic Control yang disebutkan dalam materi, KECUALI...", opts:["Dual Control","Segregation of Duty","Password Security","Diskon biaya transaksi"], correct:3, exp:"10 elemen Basic Control: Kode Etik, Dual Control, Dual Custody, Segregation of Duty, Compliance Awareness, Verifikasi, Password Security, Security, Rekonsiliasi, dan Kelengkapan Dokumen."},
+{cat:"4D Risk Awareness", q:"Dalam konsep '4-D Improve Your Risk Control Awareness', apa yang dimaksud dengan Dual Custody?", opts:["Dua pekerjaan berbeda dilakukan oleh dua orang berbeda","Proses operasional penting harus dilakukan secara bersamaan oleh dua orang","Setiap proses harus diverifikasi dan disetujui oleh supervisor","Memahami dan mengimplementasikan aturan dan regulasi"], correct:1, exp:"Dual Custody = proses operasional yang penting harus dilakukan secara bersamaan oleh dua orang."},
+{cat:"4D Risk Awareness", q:"'Dua pekerjaan yang berbeda harus dilakukan oleh dua orang yang berbeda' adalah definisi dari...", opts:["Dual Control","Segregation of Duty","Discipline to Comply with Procedure","Dual Custody"], correct:1, exp:"Definisi tersebut adalah Segregation of Duty (pemisahan tugas)."},
+{cat:"4D Risk Awareness", q:"'Setiap proses operasional harus diverifikasi dan disetujui oleh supervisor' adalah definisi dari...", opts:["Dual Custody","Dual Control","Segregation of Duty","Discipline to Comply with Procedure"], correct:1, exp:"Dual Control = setiap proses operasional harus diverifikasi dan disetujui oleh supervisor."},
+{cat:"Kelengkapan Dokumen", q:"Apa fungsi utama dari dokumen audit trail?", opts:["Mempercepat proses approval","Melacak & memverifikasi transaksi serta mendeteksi aktivitas mencurigakan","Mengurangi biaya operasional","Menggantikan tanda tangan nasabah"], correct:1, exp:"Audit trail digunakan untuk melacak/memverifikasi data transaksi yang terjadi dan mendeteksi aktivitas mencurigakan dari pihak luar."},
+{cat:"Penyimpanan Dokumen", q:"Apa yang dimaksud dengan Clean Desk Policy?", opts:["Meja kerja harus selalu bersih dari debu","Tidak diperkenankan ada dokumen di atas meja kerja saat meninggalkan area kerja","Karyawan wajib membersihkan meja setiap hari Jumat","Dokumen boleh ditinggal di meja jika sudah dirapikan"], correct:1, exp:"Clean Desk Policy: tidak diperkenankan ada dokumen-dokumen di atas meja kerja saat meninggalkan area kerja; informasi sensitif wajib disimpan di filing cabinet terkunci."},
+{cat:"Surprise Checking", q:"Tujuan utama dari Surprise Checking di cabang adalah...", opts:["Menilai kerapian seragam karyawan","Memastikan tidak ada pelanggaran terkait pre-signed blank form & penyimpanan dokumen singly","Mengukur kecepatan pelayanan teller","Menguji pengetahuan produk karyawan"], correct:1, exp:"Surprise Checking memastikan tidak ada pelanggaran terkait penerimaan pre-signed blank form dan penyimpanan dokumen secara singly di tempat yang tidak sesuai ketentuan."},
+{cat:"PEP", q:"Siapa yang termasuk kategori nasabah PEP (Politically Exposed Person)?", opts:["Hanya pejabat negara aktif","Orang yang diberi/pernah berwenang menjalankan fungsi penting negara atau organisasi internasional, termasuk pihak terkait","Hanya pegawai BUMN tingkat staff","Semua nasabah baru di cabang"], correct:1, exp:"PEP mencakup pejabat negara/militer/eksekutif senior BUMN/pejabat partai politik, pejabat organisasi internasional, serta pihak terkait seperti keluarga inti dan pihak yang berhubungan (supir, asisten pribadi, dll)."},
+{cat:"PEP", q:"Jika hasil EDD terhadap nasabah PEP menunjukkan ketidaksesuaian profil dan termasuk aktivitas mencurigakan, maka wajib dilaporkan dalam...", opts:["Laporan Bulanan Cabang","Laporan Transaksi Keuangan Mencurigakan (LTKM) kepada FCC","Laporan ke OJK langsung tanpa proses internal","Tidak perlu dilaporkan, cukup dicatat internal"], correct:1, exp:"Jika hasil EDD tidak sesuai profil nasabah dan termasuk aktivitas mencurigakan, wajib dilaporkan dalam LTKM kepada FCC."},
+{cat:"Verifikasi", q:"Sebelum otorisasi pembukaan rekening, apa yang wajib dilakukan pejabat operasional terhadap nasabah?", opts:["Konfirmasi secara langsung dengan pertanyaan terbuka kepada nasabah","Cukup memeriksa dokumen di sistem saja","Menunggu approval dari Kantor Pusat tanpa konfirmasi","Mengirim email otomatis tanpa verifikasi lisan"], correct:0, exp:"Pejabat operasional wajib melakukan konfirmasi langsung kepada nasabah menggunakan metode pertanyaan terbuka, memastikan kesesuaian hasil konfirmasi dengan data aplikasi."},
+{cat:"Verifikasi", q:"Jika hasil konfirmasi data nasabah tidak sesuai, apa langkah yang harus diambil?", opts:["Tetap melanjutkan otorisasi pembukaan rekening","Membatalkan rekening tanpa penjelasan", "Meminta nasabah menuliskan data sebenarnya secara tertulis dan melakukan proses EDD","Mengabaikan dan melaporkan ke atasan minggu depan"], correct:2, exp:"Jika hasil konfirmasi tidak sesuai, petugas meminta nasabah menuliskan informasi data sebenarnya secara tertulis dan melakukan proses EDD sesuai ketentuan."},
+{cat:"Rekonsiliasi", q:"Apa risiko yang muncul jika Cross Check Antar Teller tidak benar-benar dijalankan dan hanya tanda tangan/paraf formalitas?", opts:["Tidak ada risiko karena hanya formalitas","Transaksi fiktif","Mempercepat proses tutup buku","Mengurangi beban kerja Head Teller"], correct:1, exp:"Jika Cross Check Antar Teller tidak dijalankan dengan benar (hanya tanda tangan/paraf), risikonya adalah munculnya transaksi fiktif."},
+{cat:"Rekonsiliasi", q:"Apa risiko utama jika Stock Opname (STO) Fixed Asset tidak dilakukan?", opts:["Selisih fisik dengan Fixed Asset System (FAS)","Komplain nasabah meningkat","Keterlambatan gaji karyawan","Tidak ada dampak signifikan"], correct:0, exp:"Tidak melakukan STO pada Fixed Asset berisiko menimbulkan selisih antara fisik aset dengan data di Fixed Asset System (FAS)."},
+{cat:"Cash Opname", q:"Berapa frekuensi minimum BM (Branch Manager) wajib melakukan cash opname dan mencetak Neraca?", opts:["Setiap hari","1 minggu sekali","1 bulan sekali","1 tahun sekali"], correct:2, exp:"BM wajib melakukan cash opname setiap 1 bulan sekali dan mencetak Neraca untuk mengetahui jenis currency uang tunai (GL Kas) yang dikelola cabang."},
+{cat:"Password Security", q:"Apa risiko utama dari kasus 'sharing password admin CCTV' yang dicontohkan dalam materi?", opts:["Mempercepat proses pelaporan","Membuka peluang penyalahgunaan akses oleh pihak yang tidak berwenang","Tidak ada risiko selama dilakukan secara lisan","Mengurangi beban kerja BSM"], correct:1, exp:"Sharing password (termasuk secara lisan) membuka peluang penyalahgunaan akses oleh pihak yang tidak berwenang, melanggar prinsip kerahasiaan password."},
+{cat:"Password Security", q:"Jika ada pemaksaan penggunaan user ID dan password oleh pihak yang tidak berhak/tidak berwenang, apa yang harus dilakukan?", opts:["Memberikan password agar tidak terjadi konflik","Melakukan eskalasi ke PUK","Mendiamkan saja","Melaporkan ke nasabah"], correct:1, exp:"Jika ada pemaksaan penggunaan user ID/password oleh pihak yang tidak berhak, wajib dilakukan eskalasi ke PUK."},
+{cat:"Definisi Fraud", q:"Berdasarkan POJK No. 39/POJK.03/2019, Fraud didefinisikan sebagai...", opts:["Kesalahan administratif yang tidak disengaja","Tindakan penyimpangan/pembiaran yang sengaja dilakukan untuk mengelabui, menipu, atau memanipulasi sehingga menimbulkan kerugian","Keterlambatan pelaporan keuangan","Perbedaan pendapat antar karyawan"], correct:1, exp:"Fraud adalah tindakan penyimpangan atau pembiaran yang sengaja dilakukan untuk mengelabui, menipu, atau memanipulasi Bank/nasabah/pihak lain sehingga menimbulkan kerugian dan/atau keuntungan bagi pelaku."},
+{cat:"Jenis Fraud", q:"Berikut ini termasuk Jenis Perbuatan Fraud menurut materi, KECUALI...", opts:["Penggelapan (termasuk penggelapan aset)","Penyuapan dan korupsi (bribery and corruption)","Pembocoran informasi","Keterlambatan absensi karyawan"], correct:3, exp:"Jenis perbuatan fraud meliputi: kecurangan, penipuan, penggelapan, pembocoran informasi, tindak pidana perbankan, penyuapan & korupsi, dan tindakan lain yang dapat dipersamakan dengan fraud. Keterlambatan absensi bukan termasuk fraud."},
+{cat:"Red Flag Fraud", q:"Berikut ini termasuk contoh indikasi Red Flag potensi fraud karyawan, KECUALI...", opts:["Gaya hidup berlebihan","Manipulasi data","Mengikuti pelatihan compliance secara rutin","Terlibat perjudian"], correct:2, exp:"Contoh Red Flag: gaya hidup berlebihan, perubahan perilaku, manipulasi data, terlibat perjudian, dan abai terhadap kontrol. Mengikuti pelatihan compliance justru perilaku positif, bukan red flag."},
+{cat:"WBS", q:"Apa yang dimaksud dengan WBS dalam konteks pelaporan pelanggaran di Danamon?", opts:["Workshop Berkala Sehat","Whistle Blowing System / Whistleblowing Service","Weekly Branch Survey","Work Balance Schedule"], correct:1, exp:"WBS adalah Whistle Blowing System/Service, saluran untuk melaporkan indikasi misconduct atau fraud secara rahasia."},
+{cat:"Sanksi Fraud", q:"Berikut ini adalah sanksi yang dapat diterima pelaku fraud, KECUALI...", opts:["Pemutusan Hubungan Kerja (PHK)","Penuntutan secara hukum","Kenaikan pangkat sebagai pembinaan","Pencatatan dalam Daftar Negative Karyawan Danamon"], correct:2, exp:"Sanksi bagi pelaku fraud antara lain surat peringatan, PHK, penuntutan hukum, pencatatan dalam daftar negatif karyawan, dan pelaporan ke OJK — bukan kenaikan pangkat."},
+{cat:"SIPELAKU", q:"Apa fungsi utama SIPELAKU (Sistem Informasi Pelaku di Sektor Jasa Keuangan)?", opts:["Mencatat gaji karyawan se-Indonesia","Memuat rekam jejak pelaku fraud yang dapat diakses oleh seluruh Lembaga Jasa Keuangan di Indonesia","Sistem booking cuti karyawan","Aplikasi internal untuk transfer dana antar cabang"], correct:1, exp:"SIPELAKU (referensi POJK No. 28 Tahun 2024) memuat rekam jejak pelaku fraud yang dikelola OJK dan dapat digunakan/diakses oleh seluruh Lembaga Jasa Keuangan di Indonesia untuk screening dan profiling."},
+{cat:"4K Anti Fraud", q:"Dalam konsep 4K, 'Know Your Customer (KYC)' berkaitan erat dengan proses...", opts:["Cash opname harian","Identifikasi - Verifikasi, CDD - EDD","Penilaian kinerja tahunan","Pengadaan barang cabang"], correct:1, exp:"KYC berkaitan dengan proses Identifikasi-Verifikasi nasabah melalui CDD (Customer Due Diligence) dan EDD (Enhanced Due Diligence)."},
+{cat:"4K Anti Fraud", q:"'Kenali Anggota Team dengan baik, waspada jika ada perubahan signifikan' adalah penjelasan dari komponen 4K yaitu...", opts:["Know Your Process (KYP)","Know Your Employees (KYE)","Know Your Customer (KYC)","Know What to Do (KWD)"], correct:1, exp:"Know Your Employees (KYE) menekankan pentingnya mengenal anggota tim dengan baik dan waspada terhadap perubahan perilaku yang signifikan, yang bisa menjadi indikasi red flag."},
+{cat:"Account Opening Non Personal", q:"Untuk pembukaan rekening Non Personal yang dikuasakan, persetujuan wajib didapat dari...", opts:["Customer Service saja","AM/SME Regional Business Head/EB Business Head","Satpam cabang","Tidak perlu persetujuan tambahan"], correct:1, exp:"Pembukaan rekening yang dikuasakan wajib mendapat persetujuan dari AM/SME Regional Business Head/EB Business Head."},
+{cat:"Account Opening Non Personal", q:"Jika dokumen pembukaan CIF/rekening Non Personal cukup kompleks, langkah yang tepat adalah...", opts:["Memprosesnya langsung tanpa opini tambahan","Meminta opini ke Helpdesk Legal","Menolak pembukaan rekening sepenuhnya","Meneruskan ke cabang lain"], correct:1, exp:"Jika dokumen pembukaan CIF/rekening cukup kompleks, petugas wajib meminta opini ke Helpdesk Legal."},
+];
+
+let current = 0;
+let answers = new Array(questions.length).fill(null);
+let answered = new Array(questions.length).fill(false);
+let score = 0;
+
+function startQuiz(){
+  document.getElementById('start').classList.add('hidden');
+  document.getElementById('quizArea').classList.remove('hidden');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q = questions[current];
+  document.getElementById('qCategory').textContent = q.cat;
+  document.getElementById('qText').textContent = (current+1) + ". " + q.q;
+  document.getElementById('progressText').textContent = `Soal ${current+1} / ${questions.length}`;
+  document.getElementById('progressFill').style.width = ((current)/questions.length*100) + '%';
+  document.getElementById('scoreLive').textContent = `Skor: ${score}`;
+
+  const box = document.getElementById('optionsBox');
+  box.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  q.opts.forEach((opt, idx) => {
+    const div = document.createElement('div');
+    div.className = 'opt';
+    div.innerHTML = `<span class="letter">${letters[idx]}</span><span>${opt}</span>`;
+    if(!answered[current]){
+      div.onclick = () => selectOption(idx);
+      if(answers[current] === idx) div.classList.add('selected');
+    } else {
+      div.classList.add('disabled');
+      if(idx === q.correct) div.classList.add('correct');
+      else if(idx === answers[current]) div.classList.add('incorrect');
+    }
+    box.appendChild(div);
+  });
+
+  const explainBox = document.getElementById('explainBox');
+  if(answered[current]){
+    explainBox.classList.remove('hidden');
+    const isCorrect = answers[current] === q.correct;
+    explainBox.innerHTML = `<b>${isCorrect ? '✅ Benar!' : '❌ Kurang tepat.'}</b> Jawaban yang benar: <b>${letters[q.correct]}. ${q.opts[q.correct]}</b><br><br>${q.exp}`;
+  } else {
+    explainBox.classList.add('hidden');
+    explainBox.innerHTML = '';
+  }
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  updateMainBtn();
+}
+
+function selectOption(idx){
+  if(answered[current]) return;
+  answers[current] = idx;
+  renderQuestion();
+  updateMainBtn();
+}
+
+function updateMainBtn(){
+  const btn = document.getElementById('mainBtn');
+  if(!answered[current]){
+    btn.textContent = 'Submit Jawaban';
+    btn.disabled = answers[current] === null;
+  } else if(current === questions.length - 1){
+    btn.textContent = 'Lihat Hasil Akhir';
+    btn.disabled = false;
+  } else {
+    btn.textContent = 'Soal Berikutnya →';
+    btn.disabled = false;
+  }
+}
+
+function handleMainBtn(){
+  if(!answered[current]){
+    answered[current] = true;
+    if(answers[current] === questions[current].correct) score++;
+    renderQuestion();
+  } else if(current === questions.length - 1){
+    showResult();
+  } else {
+    current++;
+    renderQuestion();
+  }
+}
+
+function prevQuestion(){
+  if(current > 0){
+    current--;
+    renderQuestion();
+  }
+}
+
+function showResult(){
+  document.getElementById('quizArea').classList.add('hidden');
+  const resultDiv = document.getElementById('result');
+  resultDiv.classList.remove('hidden');
+  const pct = Math.round((score/questions.length)*100);
+
+  let verdict = '';
+  if(pct >= 85) verdict = '🏆 Luar biasa! Pemahaman kontrol & fraud awareness sangat baik.';
+  else if(pct >= 70) verdict = '👍 Bagus! Sudah cukup paham, masih ada beberapa poin untuk direview.';
+  else if(pct >= 50) verdict = '📘 Cukup. Disarankan baca ulang materi terutama bagian yang salah.';
+  else verdict = '⚠️ Perlu belajar ulang materi Basic Control & Fraud Awareness secara menyeluruh.';
+
+  let reviewHtml = '';
+  questions.forEach((q, i) => {
+    const isCorrect = answers[i] === q.correct;
+    reviewHtml += `<div class="review-item ${isCorrect ? 'ok' : 'wrong'}">
+      <div class="qn">Soal ${i+1} — ${q.cat}</div>
+      <div>${q.q}</div>
+      <div class="answer-line">Jawabanmu: <b>${answers[i] !== null ? q.opts[answers[i]] : '-'}</b> ${isCorrect ? '✅' : '❌'}</div>
+      ${!isCorrect ? `<div class="answer-line">Jawaban benar: <b>${q.opts[q.correct]}</b></div>` : ''}
+    </div>`;
+  });
+
+  resultDiv.innerHTML = `
+    <div class="score-circle" style="--pct:${pct}"><span>${pct}%</span><small>${score}/${questions.length} benar</small></div>
+    <h2>${verdict}</h2>
+    <div class="summary-line">Kamu menjawab ${score} dari ${questions.length} soal dengan benar.</div>
+    <button class="btn-primary" style="width:100%;margin-bottom:18px" onclick="restartQuiz()">🔄 Ulangi Quiz</button>
+    <div style="text-align:left;margin-top:10px;">
+      <h3 style="font-size:15px;color:var(--orange);margin-bottom:10px;">Review Jawaban</h3>
+      ${reviewHtml}
+    </div>
+  `;
+}
+
+function restartQuiz(){
+  current = 0;
+  answers = new Array(questions.length).fill(null);
+  answered = new Array(questions.length).fill(false);
+  score = 0;
+  document.getElementById('result').classList.add('hidden');
+  document.getElementById('quizArea').classList.remove('hidden');
+  renderQuestion();
+}
+</script>
+</body>
+</html>
