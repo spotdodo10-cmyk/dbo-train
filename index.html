@@ -553,10 +553,10 @@ function showResult(){
   const pct = Math.round((score/questions.length)*100);
 
   let verdict = '';
-  if(pct >= 85) verdict = '🏆 Luar biasa! Pemahaman kontrol & fraud awareness sangat baik.';
+  if(pct >= 85) verdict = '🏆 Luar biasa!';
   else if(pct >= 70) verdict = '👍 Bagus! Sudah cukup paham, masih ada beberapa poin untuk direview.';
   else if(pct >= 50) verdict = '📘 Cukup. Disarankan baca ulang materi terutama bagian yang salah.';
-  else verdict = '⚠️ Perlu belajar ulang materi Basic Control & Fraud Awareness secara menyeluruh.';
+  else verdict = '⚠️ Perlu belajar ulang materi secara menyeluruh.';
 
   let reviewHtml = '';
   questions.forEach((q, i) => {
